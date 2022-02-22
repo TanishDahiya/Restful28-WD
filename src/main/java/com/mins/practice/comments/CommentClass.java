@@ -41,6 +41,8 @@ public class CommentClass {
 	 * 
 	 * 7)BASIC AUTHENTICATION USING SPRING SECURITY  with username and password
 	 * 
+	 * 8) H2 database and remove spring security dependency
+	 * 
 	 */
 
 }

@@ -3,6 +3,7 @@ package com.mins.practice.controller;
 
 import java.net.URI;
 import java.util.List;
+import java.util.Optional;
 
 import javax.validation.Valid;
 
@@ -25,24 +26,29 @@ import com.mins.practice.Exceptions.UserNotFoundException;
 import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.linkTo;
 import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.methodOn;
 import com.mins.practice.entities.User;
+import com.mins.practice.repository.UserRepository;
 
 @RestController
 public class UserController {
 	
+//	@Autowired
+//	private UserDaoService uds;
+	
 	@Autowired
-	private UserDaoService uds;
+	private UserRepository userrepo;
+	
 	//retreive all users
 	@GetMapping("/users")
 	public List<User> retrieveallUser() {
-		return uds.findAll();
+		return userrepo.findAll();
 	}
 	
 	//retreive a single user
 	//
 	@GetMapping("/users/{id}")
 	public EntityModel<User> retrieveUser(@PathVariable int id) {
-		User user=uds.findOne(id);
-		if(user==null) {
+		Optional<User> user=userrepo.findById(id);
+		if(!user.isPresent()) {
 			throw new UserNotFoundException("id:"+id);
 		}
 		
@@ -51,7 +57,7 @@ public class UserController {
 		//Hateoas user below for all user link
 		//"all-users", SERVER_PATH + "/users"
 				//retrieveAllUsers
-				EntityModel<User> resource = EntityModel.of(user);
+				EntityModel<User> resource = EntityModel.of(user.get());
 				
 				WebMvcLinkBuilder linkTo = 
 						linkTo(methodOn(this.getClass()).retrieveallUser());
@@ -69,7 +75,7 @@ public class UserController {
 	public ResponseEntity<HttpStatus>createUser(@Valid @RequestBody User user) {
 //		User saveUser=uds.save(user);  //active when we use 2nd method of response status 
 		try {
-			User saveUser=uds.save(user);
+			User saveUser=userrepo.save(user);
 			return new ResponseEntity<>(HttpStatus.CREATED);
 		}catch(Exception e) {
 			return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
@@ -86,11 +92,11 @@ public class UserController {
 	//Delete a user
 	@DeleteMapping("/users/{id}")
 	public void deleteUser(@PathVariable int id) {
-		User user=uds.deleteUser(id);
-		
-		if(user==null) {
-			throw new UserNotFoundException("id:"+ id);
-		}
+		userrepo.deleteById(id);
+		//Automatically throws an exception so need to write below code
+//		if(user==null) {
+//			throw new UserNotFoundException("id:"+ id);
+//		}
 		
 	}
 
